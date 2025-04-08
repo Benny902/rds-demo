@@ -14,7 +14,9 @@ npm run dev
 (backend needs to be running ofc)
 
 ## images:
-![a](/img/image0.png)
+
 ![a](/img/image1.png)
 ![a](/img/image2.png)
 ![a](/img/image3.png)
+![a](/img/image4.png)
+![a](/img/image5.png)
