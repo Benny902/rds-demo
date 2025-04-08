@@ -15,6 +15,12 @@ import {
   renderLatencyChart
 } from './scripts.chart.js'
 
+import {
+  initializeMap,
+  showOnMap,
+  showStreetOnMap
+} from './scripts.map.js'
+
 const containers = [
   { id: 'monolith', label: 'Monolith', baseUrl: '/monolith' },
   { id: 'microservice', label: 'Microservices', baseUrl: '/microservice' }
@@ -54,6 +60,16 @@ containers.forEach(async ({ id, label, baseUrl }) => {
   let latestResults = []
   let latestSummary = null
 
+  dropdown.addEventListener('change', async () => {
+    if (!endpointSelect.value.includes('/streets')) return
+    const streetName = dropdown.value
+    const localityId = resolveLocalityId(resourceIdInput.value.trim(), cachedLocalities)
+    const locality = cachedLocalities.find(l => l.localityId === localityId)
+    const localityName = locality?.localityName
+    if (!streetName || !localityName) return
+    await showStreetOnMap(container, streetName, localityName)
+  })
+
   // Handlers
   submitBtn.addEventListener('click', async () => {
     let endpoint = endpointSelect.value
@@ -78,6 +94,15 @@ containers.forEach(async ({ id, label, baseUrl }) => {
         if (endpoint === '/v1/localities') {
           cachedLocalities = json.data
           rebuildSuggestions(cachedLocalities, suggestionsList)
+          dropdown.addEventListener('change', () => {
+            const selectedName = dropdown.value
+            if (selectedName) showOnMap(container, selectedName)
+          }, { once: true })
+        }
+
+        if (endpoint.startsWith('/v1/localities/') && !endpoint.includes('/streets')) {
+          const loc = json?.data
+          if (loc?.localityName) showOnMap(container, loc.localityName)
         }
       } catch {}
     } catch (err) {

@@ -18,6 +18,8 @@ export const updateComparisonHighlights = (summaries, containerRefs) => {
   let latencyChart
   
   export const renderLatencyChart = (summaries) => {
+    const wrapper = document.getElementById('latency-chart-wrapper')
+    if (wrapper.classList.contains('hidden')) wrapper.classList.remove('hidden')
     const [a, b] = Object.keys(summaries)
     if (!a || !b) return
   

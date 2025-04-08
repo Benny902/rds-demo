@@ -35,6 +35,7 @@ export const resolveLocalityId = (input, cachedLocalities) => {
     dropdown.innerHTML = ''
     names.forEach(name => {
       const option = document.createElement('option')
+      option.value = name
       option.textContent = name
       dropdown.appendChild(option)
     })
