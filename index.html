@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>API Benchmark Tool</title>
+  <title>API Test & Benchmark</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,7 +16,8 @@
     </select>
 
     <input type="text" id="correlationId" placeholder="X-Correlation-ID" />
-    <input type="text" id="resourceId" class="hidden" placeholder="Enter ID for /{id} endpoints" />
+    <input type="text" id="resourceId" class="hidden" placeholder="Enter ID or Name" list="localitySuggestions" />
+    <datalist id="localitySuggestions"></datalist>    
 
     <button id="submitBtn">Submit Request</button>
     <pre id="output"></pre>
@@ -28,20 +29,18 @@
 
     <div class="inline-input">
       <label for="virtualUsers">Virtual Users:</label>
-      <input type="number" id="virtualUsers" value="20" />
+      <input type="number" id="virtualUsers" value="10" />
     </div>
     
     <div class="inline-input">
       <label for="duration">Duration (sec):</label>
-      <input type="number" id="duration" value="30" />
+      <input type="number" id="duration" value="10" />
     </div>
     
 
     <button id="runBenchmark">Run Benchmark</button>
-    <button id="exportJson">Export JSON</button>
-    <button id="exportCsv">Export CSV</button>
-
     <pre id="benchmarkOutput"></pre>
+      <button id="exportJson">Export JSON</button>
   </div>
 
   <script src="scripts.js"></script>
