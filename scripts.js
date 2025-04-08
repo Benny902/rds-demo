@@ -23,6 +23,78 @@ function updateComparisonHighlights() {
   containerRefs[lose].classList.remove('winner')
 }
 
+let latencyChart
+
+function renderLatencyChart() {
+  const [a, b] = Object.keys(summaries)
+  if (!a || !b) return
+
+  const sa = summaries[a]
+  const sb = summaries[b]
+
+  const ctxId = 'latencyChartCanvas'
+  let canvas = document.getElementById(ctxId)
+  if (!canvas) {
+    canvas = document.createElement('canvas')
+    canvas.id = ctxId
+    document.getElementById('latency-chart').innerHTML = ''
+    document.getElementById('latency-chart').appendChild(canvas)
+  }
+
+  const data = {
+    labels: ['min_ms', 'max_ms', 'avg_ms', 'p50', 'p90', 'p99', 'rps'],
+    datasets: [
+      {
+        label: 'Monolith',
+        data: [
+          sa.min_ms,
+          sa.max_ms,
+          sa.avg_ms,
+          sa.p50,
+          sa.p90,
+          sa.p99,
+          sa.rps
+        ],
+        backgroundColor: 'rgba(34, 197, 94, 0.7)' // green
+      },
+      {
+        label: 'Microservices',
+        data: [
+          sb.min_ms,
+          sb.max_ms,
+          sb.avg_ms,
+          sb.p50,
+          sb.p90,
+          sb.p99,
+          sb.rps
+        ],
+        backgroundColor: 'rgba(239, 68, 68, 0.7)' // red
+      }
+    ]
+  }
+  
+
+  const config = {
+    type: 'bar',
+    data,
+    options: {
+      responsive: true,
+      plugins: {
+        title: { display: true, text: 'Latency Comparison (ms)' }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'Milliseconds (ms)' }
+        }
+      }
+    }
+  }
+
+  if (latencyChart) latencyChart.destroy()
+  latencyChart = new Chart(canvas, config)
+}
+
 
 containers.forEach(({ id, label, baseUrl }) => {
   const container = document.getElementById(id)
@@ -43,6 +115,7 @@ containers.forEach(({ id, label, baseUrl }) => {
 
     <button class="submitBtn">Submit Single Request</button>
     <pre class="output"></pre>
+    <select class="resultDropdown hidden"></select>
 
     <hr />
 
@@ -152,6 +225,36 @@ containers.forEach(({ id, label, baseUrl }) => {
       const res = await fetch(fullUrl, { method: 'GET', headers: { 'X-Correlation-ID': correlationId } })
       const text = await res.text()
       output.textContent = `Status: ${res.status}\n\n${text}`
+      const dropdown = $('.resultDropdown')
+      dropdown.classList.add('hidden')
+      dropdown.innerHTML = ''
+
+      try {
+        const json = JSON.parse(text)
+      
+        if (endpoint.includes('/localities') && Array.isArray(json?.data)) {
+          dropdown.classList.remove('hidden')
+      
+          const names = json.data
+            .map(entry => {
+              if (endpoint === '/v1/localities') return entry.localityName
+              if (endpoint.includes('/streets')) return entry.streetName
+              return entry.localityName
+            })
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b))
+      
+          names.forEach(name => {
+            const option = document.createElement('option')
+            option.textContent = name
+            dropdown.appendChild(option)
+          })
+        }
+      } catch (e) {
+        // not JSON? ignore silently
+      }
+      
+
 
       if (endpoint === '/v1/localities') {
         try {
@@ -189,6 +292,7 @@ containers.forEach(({ id, label, baseUrl }) => {
     benchmarkOutput.textContent = JSON.stringify(summary, null, 2)
     summaries[id] = summary
     updateComparisonHighlights()    
+    renderLatencyChart()
   })
 
   exportJsonBtn.addEventListener('click', () => {

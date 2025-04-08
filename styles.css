@@ -39,12 +39,16 @@ body {
   }
 
   pre {
+    font-size: 1rem;
     background: #222;
     color: #0f0;
     padding: 1rem;
-    overflow-x: auto;
     max-height: 400px;
-  }
+    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }  
 
   .hidden {
     display: none;
@@ -86,3 +90,21 @@ body {
     box-shadow: 0 0 12px rgba(220, 20, 60, 0.3);
   }
   
+  #latency-chart-wrapper {
+  width: 100%;
+  max-width: 1400px;
+  margin: 2rem auto;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+#latencyChartCanvas {
+  width: 100% !important;
+  height: auto !important;
+}
+
+.resultDropdown {
+  padding: 0.5rem;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
