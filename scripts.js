@@ -3,23 +3,23 @@ import {
   rebuildSuggestions,
   updateVisibility,
   buildDropdown
-} from './scripts.helpers.js'
+} from './funcs/scripts.helpers.js'
 
 import {
   runBenchmark,
   summarizeBenchmark
-} from './scripts.benchmark.js'
+} from './funcs/scripts.benchmark.js'
 
 import {
   updateComparisonHighlights,
   renderLatencyChart
-} from './scripts.chart.js'
+} from './funcs/scripts.chart.js'
 
 import {
   initializeMap,
   showOnMap,
   showStreetOnMap
-} from './scripts.map.js'
+} from './funcs/scripts.map.js'
 
 const containers = [
   { id: 'monolith', label: 'Monolith', baseUrl: '/monolith' },
@@ -29,7 +29,7 @@ const containers = [
 const containerRefs = {}
 const summaries = {}
 
-const templateHtml = await fetch('container.template.html').then(r => r.text())
+const templateHtml = await fetch('./funcs/container.template.html').then(r => r.text())
 
 containers.forEach(async ({ id, label, baseUrl }) => {
   const container = document.getElementById(id)
