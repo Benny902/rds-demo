@@ -42,7 +42,7 @@ pre {
   background: #222;
   color: rgb(0, 255, 0);
   padding: 1rem;
-  max-height: 200px;
+  max-height: 250px;
   overflow-y: auto;
   overflow-x: hidden;
   white-space: pre-wrap;
