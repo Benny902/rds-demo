@@ -2,47 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>API Test & Benchmark</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>API Comparison - Monolith vs Microservices</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="container">
-    <h2>API Request Test</h2>
-
-    <select id="endpoint">
-      <option value="/v1/localities">GET /v1/localities</option>
-      <option value="/v1/localities/{id}">GET /v1/localities/{id}</option>
-      <option value="/v1/localities/{id}/streets">GET /v1/localities/{id}/streets</option>
-    </select>
-
-    <input type="text" id="correlationId" placeholder="X-Correlation-ID" />
-    <input type="text" id="resourceId" class="hidden" placeholder="Enter ID or Name" list="localitySuggestions" />
-    <datalist id="localitySuggestions"></datalist>    
-
-    <button id="submitBtn">Submit Request</button>
-    <pre id="output"></pre>
-
-    <hr />
-
-
-    <h2>API Benchmark</h2>
-
-    <div class="inline-input">
-      <label for="virtualUsers">Virtual Users:</label>
-      <input type="number" id="virtualUsers" value="10" />
+  <div class="comparison-wrapper">
+    <div class="container" id="monolith"></div>
+    <div class="container" id="microservice"></div>
+    <div style="max-width: 1200px; margin: 2rem auto; font-family: sans-serif; font-size: 0.95rem; color: #333;">
+      <h3>📊 Benchmark Metrics Explained</h3>
+      <ul>
+        <li><strong>rps</strong> = Requests Per Second (higher is better) — <code>successful requests / duration in seconds</code></li>
+        <li><strong>avg_ms</strong> = Average response time (lower is better)</li>
+        <li><strong>min_ms</strong> = Fastest single request</li>
+        <li><strong>max_ms</strong> = Slowest single request</li>
+        <li><strong>p50</strong> = Median latency (50% of requests were faster)</li>
+        <li><strong>p90</strong> = 90th percentile (90% of requests were faster)</li>
+        <li><strong>p99</strong> = 99th percentile (only 1% were slower)</li>
+        <li><strong>failed</strong> = Failed requests count (should be <code>0</code>)</li>
+        <li><strong>timestamp</strong> = When this benchmark was run</li>
+      </ul>
     </div>
     
-    <div class="inline-input">
-      <label for="duration">Duration (sec):</label>
-      <input type="number" id="duration" value="10" />
-    </div>
-    
-
-    <button id="runBenchmark">Run Benchmark</button>
-    <pre id="benchmarkOutput"></pre>
-      <button id="exportJson">Export JSON</button>
   </div>
 
-  <script src="scripts.js"></script>
+  <script src="scripts.js" type="module"></script>
 </body>
 </html>

@@ -1,41 +1,101 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const endpointSelect = document.getElementById('endpoint')
-  const correlationInput = document.getElementById('correlationId')
-  const resourceIdInput = document.getElementById('resourceId')
-  const submitBtn = document.getElementById('submitBtn')
-  const runBtn = document.getElementById('runBenchmark')
-  const benchmarkOutput = document.getElementById('benchmarkOutput')
-  const output = document.getElementById('output')
-  const virtualUsersInput = document.getElementById('virtualUsers')
-  const durationInput = document.getElementById('duration')
-  const exportJsonBtn = document.getElementById('exportJson')
-  const localitySuggestions = document.getElementById('localitySuggestions')
+const containers = [
+  { id: 'monolith', label: 'Monolith', baseUrl: '/monolith' },
+  { id: 'microservice', label: 'Microservices', baseUrl: '/microservice' }
+]
 
-  let latestResults = []
+const containerRefs = {}
+const summaries = {}
+
+function updateComparisonHighlights() {
+  const [a, b] = Object.keys(summaries)
+  if (!a || !b) return
+
+  const rpsA = parseFloat(summaries[a].rps)
+  const rpsB = parseFloat(summaries[b].rps)
+
+  const win = rpsA > rpsB ? a : b
+  const lose = rpsA > rpsB ? b : a
+
+  containerRefs[win].classList.add('winner')
+  containerRefs[win].classList.remove('loser')
+
+  containerRefs[lose].classList.add('loser')
+  containerRefs[lose].classList.remove('winner')
+}
+
+
+containers.forEach(({ id, label, baseUrl }) => {
+  const container = document.getElementById(id)
+  containerRefs[id] = container
+
+  container.innerHTML = `
+    <h2>${label}</h2>
+
+    <select class="endpoint">
+      <option value="/v1/localities">GET /v1/localities</option>
+      <option value="/v1/localities/{id}">GET /v1/localities/{id}</option>
+      <option value="/v1/localities/{id}/streets">GET /v1/localities/{id}/streets</option>
+    </select>
+
+    <input type="text" class="correlationId" placeholder="X-Correlation-ID" />
+    <input type="text" class="resourceId hidden" placeholder="Enter ID or Name" list="${id}-suggestions" />
+    <datalist id="${id}-suggestions"></datalist>
+
+    <button class="submitBtn">Submit Single Request</button>
+    <pre class="output"></pre>
+
+    <hr />
+
+    <h3>Benchmark</h3>
+    <div class="inline-input">
+      <label>Virtual Users:</label>
+      <input type="number" class="virtualUsers" value="10" />
+    </div>
+    <div class="inline-input">
+      <label>Duration (sec):</label>
+      <input type="number" class="duration" value="10" />
+    </div>
+
+      <button class="runBenchmark">Run Benchmark</button>
+      <pre class="benchmarkOutput"></pre>
+      <button class="exportJson">Export JSON</button>
+
+  `
+
+  const $ = selector => container.querySelector(selector)
+
+  const endpointSelect = $('.endpoint')
+  const correlationInput = $('.correlationId')
+  const resourceIdInput = $('.resourceId')
+  const submitBtn = $('.submitBtn')
+  const runBtn = $('.runBenchmark')
+  const exportJsonBtn = $('.exportJson')
+  const benchmarkOutput = $('.benchmarkOutput')
+  const output = $('.output')
+  const virtualUsersInput = $('.virtualUsers')
+  const durationInput = $('.duration')
+  const suggestionsList = $(`#${id}-suggestions`)
+
   let cachedLocalities = []
+  let latestResults = []
   let latestSummary = null
 
   const resolveLocalityId = input => {
-    if (!input || !cachedLocalities.length) return input
     const match = cachedLocalities.find(l => l.localityId === input || l.localityName === input)
     return match?.localityId || input
   }
 
-  const rebuildLocalitySuggestions = list => {
-    localitySuggestions.innerHTML = ''
+  const rebuildSuggestions = list => {
+    suggestionsList.innerHTML = ''
     list.slice().sort((a, b) => a.localityName.localeCompare(b.localityName)).forEach(({ localityName }) => {
       const option = document.createElement('option')
       option.value = localityName
-      localitySuggestions.appendChild(option)
+      suggestionsList.appendChild(option)
     })
   }
 
-  const updateLocalityCache = json => {
-    if (json?.data && Array.isArray(json.data)) {
-      cachedLocalities = json.data
-      rebuildLocalitySuggestions(cachedLocalities)
-      console.log('Localities loaded:', cachedLocalities.length)
-    }
+  const updateVisibility = () => {
+    resourceIdInput.classList.toggle('hidden', !endpointSelect.value.includes('{id}'))
   }
 
   const summarizeBenchmark = (results, durationSec) => {
@@ -52,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return { total, success, failed, min_ms: min, max_ms: max, avg_ms: avg, rps, p50: percentile(50), p90: percentile(90), p99: percentile(99) }
   }
 
-  const runFrontendBenchmark = async (endpoint, correlationId, virtualUsers, durationSec) => {
+  const runBenchmark = async (endpoint, correlationId, virtualUsers, durationSec) => {
     const results = []
     const endTime = Date.now() + durationSec * 1000
 
@@ -76,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return results
   }
 
-  const handleSubmit = async () => {
+  submitBtn.addEventListener('click', async () => {
     let endpoint = endpointSelect.value
     const correlationId = correlationInput.value.trim()
     const input = resourceIdInput.value.trim()
@@ -86,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const resolvedId = resolveLocalityId(input)
     endpoint = endpoint.replace('{id}', encodeURIComponent(resolvedId))
-    const fullUrl = `/api${endpoint}`
+    const fullUrl = `${baseUrl}${endpoint}`
 
     try {
       const res = await fetch(fullUrl, { method: 'GET', headers: { 'X-Correlation-ID': correlationId } })
@@ -96,15 +156,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (endpoint === '/v1/localities') {
         try {
           const parsed = JSON.parse(text)
-          updateLocalityCache(parsed)
+          cachedLocalities = parsed.data
+          rebuildSuggestions(cachedLocalities)
         } catch {}
       }
     } catch (err) {
       output.textContent = `ERROR: ${err.message}`
     }
-  }
+  })
 
-  const handleBenchmark = async () => {
+  runBtn.addEventListener('click', async () => {
     let endpoint = endpointSelect.value
     const correlationId = correlationInput.value.trim()
     const input = resourceIdInput.value.trim()
@@ -114,52 +175,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const resolvedId = resolveLocalityId(input)
     endpoint = endpoint.replace('{id}', encodeURIComponent(resolvedId))
-    const fullUrl = `/api${endpoint}`
+    const fullUrl = `${baseUrl}${endpoint}`
 
     const virtualUsers = parseInt(virtualUsersInput.value)
     const duration = parseInt(durationInput.value)
 
     benchmarkOutput.textContent = 'Running benchmark...'
-    const results = await runFrontendBenchmark(fullUrl, correlationId, virtualUsers, duration)
+    const results = await runBenchmark(fullUrl, correlationId, virtualUsers, duration)
     latestResults = results
     const summary = summarizeBenchmark(results, duration)
     summary.timestamp = new Date().toISOString()
-    benchmarkOutput.textContent = JSON.stringify(summary, null, 2)
     latestSummary = summary
-  }
+    benchmarkOutput.textContent = JSON.stringify(summary, null, 2)
+    summaries[id] = summary
+    updateComparisonHighlights()    
+  })
 
-  const exportJson = () => {
+  exportJsonBtn.addEventListener('click', () => {
     const fullExport = {
       timestamp: latestSummary?.timestamp || new Date().toISOString(),
       summary: latestSummary || {},
       results: latestResults
     }
     const blob = new Blob([JSON.stringify(fullExport, null, 2)], { type: 'application/json' })
-    
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    link.download = `benchmark-${timestamp}.json`    
+    link.download = `${label.toLowerCase()}-benchmark-${timestamp}.json`
     link.click()
-  }
+  })
 
-  const updateVisibility = () => {
-    const needsId = endpointSelect.value.includes('{id}')
-    resourceIdInput.classList.toggle('hidden', !needsId)
-  }
-
-  // Event bindings
   endpointSelect.addEventListener('change', updateVisibility)
-  submitBtn.addEventListener('click', handleSubmit)
-  runBtn.addEventListener('click', handleBenchmark)
-  exportJsonBtn.addEventListener('click', exportJson)
   updateVisibility()
 
-  // Preload cache on load
-  fetch('/api/v1/localities', {
+  // Preload on load
+  fetch(`${baseUrl}/v1/localities`, {
     headers: { 'X-Correlation-ID': 'init-load' }
   })
     .then(res => res.json())
-    .then(updateLocalityCache)
-    .catch(err => console.warn('Failed to preload localities:', err.message))
+    .then(json => {
+      if (json?.data && Array.isArray(json.data)) {
+        cachedLocalities = json.data
+        rebuildSuggestions(cachedLocalities)
+      }
+    })
+    .catch(err => console.warn(`${label} preload error:`, err.message))
 })
