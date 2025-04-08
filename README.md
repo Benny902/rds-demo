@@ -13,7 +13,7 @@ npm run dev
 
 (backend needs to be running ofc)
 
-![a](/img/rds-demo.mp4)
+[![YouTube](http://i.ytimg.com/vi/MQO-7wOpbP0/hqdefault.jpg)](https://www.youtube.com/watch?v=MQO-7wOpbP0)
 
 ## images:
 
