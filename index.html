@@ -11,14 +11,22 @@
 <body>
   <div class="comparison-wrapper">
 
-    <div class="container" id="monolith"></div>
+    <div class="comparison-row">
+      
+      <div class="container" id="monolith"></div>
+  
+      <div class="container" id="microservice"></div>
 
-    <div class="container" id="microservice"></div>
+    </div>
 
-    <div style="max-width: 1200px; margin: 2rem auto; font-family: sans-serif; font-size: 0.95rem; color: #333;">
+
+    <div style="max-width: 1200px; margin: -4rem; font-family: sans-serif; font-size: 1.2rem; color: #333;">
+      <div id="run-both-wrapper">
+        <button id="runBothBtn">▶ Run Both Benchmarks</button>
+      </div>
       <h3>📊 Benchmark Metrics Explained</h3>
       <ul>
-        <li><strong>rps</strong> = Requests Per Second (higher is better) — <code>successful requests / duration in seconds</code></li>
+        <li><strong>rps</strong> = Requests Per Second (higher is better) </li>
         <li><strong>avg_ms</strong> = Average response time (lower is better)</li>
         <li><strong>min_ms</strong> = Fastest single request</li>
         <li><strong>max_ms</strong> = Slowest single request</li>
@@ -29,7 +37,6 @@
         <li><strong>timestamp</strong> = When this benchmark was run</li>
       </ul>
     </div>
-
 
     <div id="latency-chart-wrapper" class="hidden">
       <canvas id="latencyChartCanvas"></canvas>

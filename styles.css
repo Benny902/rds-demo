@@ -39,8 +39,8 @@ button {
 
 pre {
   font-size: 1rem;
-  background: #222;
-  color: rgb(0, 255, 0);
+  background: #000000;
+  color: rgb(255, 255, 255);
   padding: 1rem;
   max-height: 250px;
   overflow-y: auto;
@@ -81,7 +81,7 @@ hr {
 
 .winner {
   border: 3px solid green;
-  box-shadow: 0 0 12px rgba(0, 128, 0, 0.4);
+  box-shadow: 0 0 12px rgba(0, 235, 0, 0.4);
 }
 
 .loser {
@@ -106,4 +106,48 @@ hr {
   padding: 0.5rem;
   font-size: 1rem;
   margin-top: 0.5rem;
+}
+
+.correlationWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.correlationWrapper input {
+  flex: 1;
+}
+
+.refreshIdBtn {
+  font-size: 1.5rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.comparison-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+
+#run-both-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 3rem;
+  min-width: 50px;
+}
+
+#runBothBtn {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  margin: 1rem 0;
+  cursor: pointer;
 }

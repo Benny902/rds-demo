@@ -20,10 +20,9 @@ export const resolveLocalityId = (input, cachedLocalities) => {
   }
   
   export const buildDropdown = (endpoint, json, dropdown) => {
-    if (!Array.isArray(json?.data)) return
+    if (!Array.isArray(json)) return
   
-    dropdown.classList.remove('hidden')
-    const names = json.data
+    const names = json
       .map(entry => {
         if (endpoint === '/v1/localities') return entry.localityName
         if (endpoint.includes('/streets')) return entry.streetName

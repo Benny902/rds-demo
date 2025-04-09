@@ -44,12 +44,19 @@ containers.forEach(async ({ id, label, baseUrl }) => {
   const $ = selector => container.querySelector(selector)
   const endpointSelect = $('.endpoint')
   const correlationInput = $('.correlationId')
+  const refreshIdBtn = $('.refreshIdBtn')
+    correlationInput.value = crypto.randomUUID()
+    refreshIdBtn.addEventListener('click', () => {
+      correlationInput.value = crypto.randomUUID()
+    })
+
   const resourceIdInput = $('.resourceId')
   const submitBtn = $('.submitBtn')
   const runBtn = $('.runBenchmark')
   const exportJsonBtn = $('.exportJson')
   const benchmarkOutput = $('.benchmarkOutput')
   const output = $('.output')
+  const headersOutput = $('.headersOutput')
   const virtualUsersInput = $('.virtualUsers')
   const durationInput = $('.duration')
   const dropdown = $('.resultDropdown')
@@ -85,14 +92,41 @@ containers.forEach(async ({ id, label, baseUrl }) => {
     try {
       const res = await fetch(fullUrl, { headers: { 'X-Correlation-ID': correlationId } })
       const text = await res.text()
-      output.textContent = `Status: ${res.status}\n\n${text}`
+      
+      // Show response headers
+
+      /* // this is full header
+      const headers = [...res.headers.entries()]
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n')
+      headersOutput.textContent = `Status: ${res.status}\n${headers}`
+      */
+
+      // this is trimmed header
+      const etag = res.headers.get('etag') || 'N/A'
+      const correlation = res.headers.get('x-correlation-id') || 'N/A'
+      
+      headersOutput.textContent = [
+        `Status: ${res.status}`,
+        `etag: ${etag}`,
+        `x-correlation-id: ${correlation}`
+      ].join('\n')
+
+
+      // Show response body
+      output.textContent = text      
 
       try {
         const json = JSON.parse(text)
         buildDropdown(endpoint, json, dropdown)
 
+        const shouldShowDropdown =
+          endpoint === '/v1/localities' || endpoint.includes('/streets')
+        
+        dropdown.classList.toggle('hidden', !shouldShowDropdown)        
+
         if (endpoint === '/v1/localities') {
-          cachedLocalities = json.data
+          cachedLocalities = json
           rebuildSuggestions(cachedLocalities, suggestionsList)
           dropdown.addEventListener('change', () => {
             const selectedName = dropdown.value
@@ -101,7 +135,7 @@ containers.forEach(async ({ id, label, baseUrl }) => {
         }
 
         if (endpoint.startsWith('/v1/localities/') && !endpoint.includes('/streets')) {
-          const loc = json?.data
+          const loc = json
           if (loc?.localityName) showOnMap(container, loc.localityName)
         }
       } catch {}
@@ -148,17 +182,23 @@ containers.forEach(async ({ id, label, baseUrl }) => {
 
   endpointSelect.addEventListener('change', () => updateVisibility(endpointSelect, resourceIdInput))
   updateVisibility(endpointSelect, resourceIdInput)
+  dropdown.classList.add('hidden')
+  dropdown.innerHTML = ''
 
   // Preload suggestions
   fetch(`${baseUrl}/v1/localities`, {
-    headers: { 'X-Correlation-ID': 'init-load' }
+    headers: { 'X-Correlation-ID': 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' }
   })
     .then(res => res.json())
     .then(json => {
-      if (Array.isArray(json?.data)) {
-        cachedLocalities = json.data
+      if (Array.isArray(json)) {
+        cachedLocalities = json
         rebuildSuggestions(cachedLocalities, suggestionsList)
       }
     })
     .catch(err => console.warn(`${label} preload error:`, err.message))
+})
+
+document.getElementById('runBothBtn').addEventListener('click', () => {
+  document.querySelectorAll('.runBenchmark').forEach(btn => btn.click())
 })
