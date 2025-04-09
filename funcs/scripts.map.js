@@ -34,24 +34,26 @@ export function showOnMap(container, nameOrQuery) {
 }
 
 export async function showStreetOnMap(container, streetName, localityName) {
-    const query = `${streetName}, ${localityName}`
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json`)
-    const data = await res.json()
-    const coords = data?.[0]
-  
-    if (!coords) return
-  
-    const lat = parseFloat(coords.lat)
-    const lon = parseFloat(coords.lon)
-  
-    // Initialize if not yet
-    const map = initializeMap(container, lat, lon)
-  
-    map.eachLayer(layer => {
-      if (layer instanceof L.Marker) map.removeLayer(layer)
-    })
-  
-    map.setView([lat, lon], 16)
-    const pin = L.marker([lat, lon]).addTo(map)
-    pin.bindPopup(`<strong>${streetName}</strong><br>${localityName}`).openPopup()
-  }  
+  const queryUrl = `https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&street=${encodeURIComponent(streetName)}&city=${encodeURIComponent(localityName)}`
+
+  const res = await fetch(queryUrl)
+  const data = await res.json()
+
+  const match = data?.[0]
+  if (!match) return
+
+  const lat = parseFloat(match.lat)
+  const lon = parseFloat(match.lon)
+
+  // Only initialize AFTER you have the coordinates
+  const map = initializeMap(container, lat, lon)
+
+  // Remove only markers, keep tile layer
+  map.eachLayer(layer => {
+    if (layer instanceof L.Marker) map.removeLayer(layer)
+  })
+
+  map.setView([lat, lon], 16)
+  const marker = L.marker([lat, lon]).addTo(map)
+  marker.bindPopup(`<strong>${streetName}</strong><br>${localityName}`).openPopup()
+}
