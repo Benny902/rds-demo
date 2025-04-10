@@ -25,7 +25,7 @@ both backends needs to be running:
 
 ## video:
 
-![a](/img//rds-final-demo.mp4)
+https://github.com/user-attachments/assets/6590382f-7062-4e37-86cb-88d5683d4de7
 
 ## images:
 
