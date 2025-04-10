@@ -4,19 +4,28 @@ rds-demo
 ## demo to test the api of both monolith and microservice rds-app and benchmark comparison.
 
 
-### to run:
+### to run the demo:
 
 ```
 npm install
 npm run dev
 ```
 
-(backend needs to be running ofc)
+ 
+both backends needs to be running:  
+- run microservices backend with main branch - no changes needed.  
+- run monolith backend with main-monolith branch with these changes:  
+ on docker-compose.yml file:  
+    - change port to 54402 ("54402:80")
+    - comment out "depends on" in Reference.Data.Service
+    - comment out cosmosEmulator and zipkin services to avoid conflict on docker
+
+
 
 
 ## video:
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/MQO-7wOpbP0/0.jpg)](https://www.youtube.com/watch?v=MQO-7wOpbP0)
+![a](/img//rds-final-demo.mp4)
 
 ## images:
 
